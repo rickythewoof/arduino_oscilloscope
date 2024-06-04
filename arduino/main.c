@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <avr/io.h>
+#include <avr/sleep.h>
 #include <avr/iom2560.h>
 #include <stdlib.h>
 #include "utils/uart.h"
@@ -44,7 +45,7 @@ int main(int argc, char** argv){
       UART_putString((uint8_t*)&data);
       timer_interrupt = 0;
     } else {
-      __sleep();
+      cpu_sleep();
     }
   }
 
