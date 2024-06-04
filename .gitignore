@@ -53,3 +53,4 @@ dkms.conf
 
 # Remove that shitty .vscode folder
 .vscode/
+build/
