@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <avr/io.h>
 #include <avr/sleep.h>
+#include <avr/interrupt.h>
 #include <avr/iom2560.h>
 #include <stdlib.h>
 #include "utils/uart.h"
@@ -17,10 +18,15 @@ ISR(TIMER1_COMPA_vect){
 
 int main(int argc, char** argv){
   UART_init();
-  // Get the sampling frequency
+  uint16_t sampling_frequency = 1000;
+  uint8_t channel = 0;
   uint8_t buf[10];
+  UART_putString((uint8_t*)"Enter the sampling frequency: ");
   UART_getString(buf);
-  uint16_t sampling_frequency = atoi(buf);
+  sampling_frequency = atoi(buf);
+  UART_putString((uint8_t*)"Enter the channel: ");
+  UART_getString(buf);
+  channel = atoi(buf);
 
   TCCR1A = 0;
   TCCR1B = (1 << WGM12) | (1 << CS10) | (1 << CS12); 
@@ -41,11 +47,13 @@ int main(int argc, char** argv){
     // Wait for the interrupt, get sleep
     // Send the data
     if(timer_interrupt){
-      uint16_t data = ADC_read(0);
+      UART_putString((uint8_t*)"\nData: ");
+      uint16_t data = ADC_read(channel);
       UART_putString((uint8_t*)&data);
       timer_interrupt = 0;
     } else {
-      cpu_sleep();
+      set_sleep_mode(SLEEP_MODE_IDLE);
+      sleep_mode();
     }
   }
 

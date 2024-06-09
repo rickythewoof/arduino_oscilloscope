@@ -11,7 +11,7 @@
 void ADC_init(void){
   // Set the reference voltage to AVCC (5V)
   ADMUX = (1<<REFS0);
-  // Set the prescaler to 128
+  // Set the prescaler to 128, since the ADC clock must be between 50KHz and 200KHz
   /*
   ADEN enables the ADC
   ADPS2, ADPS1, ADPS0 set the prescaler to 128 (maximum)
