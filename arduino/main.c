@@ -18,15 +18,8 @@ ISR(TIMER1_COMPA_vect){
 
 int main(int argc, char** argv){
   UART_init();
-  uint16_t sampling_frequency = 1000;
+  uint16_t sampling_frequency = 1;
   uint8_t channel = 0;
-  uint8_t buf[10];
-  UART_putString((uint8_t*)"Enter the sampling frequency: ");
-  UART_getString(buf);
-  sampling_frequency = atoi(buf);
-  UART_putString((uint8_t*)"Enter the channel: ");
-  UART_getString(buf);
-  channel = atoi(buf);
 
   TCCR1A = 0;
   TCCR1B = (1 << WGM12) | (1 << CS10) | (1 << CS12); 
@@ -48,8 +41,11 @@ int main(int argc, char** argv){
     // Send the data
     if(timer_interrupt){
       UART_putString((uint8_t*)"\nData: ");
-      uint16_t data = ADC_read(channel);
-      UART_putString((uint8_t*)&data);
+      uint8_t data = ADC_read(channel);
+      // print bit by bit the data
+      for(int i = 0; i < 8; i++){
+        UART_putChar((data & (1 << i)) ? '1' : '0');
+      }
       timer_interrupt = 0;
     } else {
       set_sleep_mode(SLEEP_MODE_IDLE);

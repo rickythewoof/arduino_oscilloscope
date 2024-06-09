@@ -9,8 +9,8 @@
 
 
 void ADC_init(void){
-  // Set the reference voltage to AVCC (5V)
-  ADMUX = (1<<REFS0);
+  // Set the reference voltage to AVCC (5V) and left adjust the result
+  ADMUX = (1<<REFS0) | (1 << ADLAR);
   // Set the prescaler to 128, since the ADC clock must be between 50KHz and 200KHz
   /*
   ADEN enables the ADC
@@ -19,7 +19,7 @@ void ADC_init(void){
   ADCSRA = (1<<ADEN) | (1<<ADPS2) | (1<<ADPS1) | (1<<ADPS0);
 }
 
-uint16_t ADC_read(uint8_t channel){
+uint8_t ADC_read(uint8_t channel){
   // Set the channel
   ADMUX = (ADMUX & 0xF0) | (channel & 0x0F);
   // Start the conversion
@@ -27,5 +27,5 @@ uint16_t ADC_read(uint8_t channel){
   // Wait for the conversion to finish
   while(ADCSRA & (1<<ADSC));
   // Return the result
-  return ADC;
+  return ADCH;
 }

@@ -1,5 +1,3 @@
-Here's your text formatted in Markdown:
-
 # A1. Oscilloscope:
 
 ## Arduino: 
