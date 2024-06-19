@@ -8,18 +8,23 @@
 #include <stdlib.h>
 #include "utils/uart.h"
 #include "utils/analog.h"
+#include "utils/buffer.h"
+#include "utils/const.h"
+
 
 int timer_interrupt = 0;
+int sample_index = 0;
+char continuous = 1;
+
 
 ISR(TIMER1_COMPA_vect){
   timer_interrupt = 1;
-
 }
 
 int main(int argc, char** argv){
   UART_init();
   uint16_t sampling_frequency = 1;
-  uint8_t channels = 0; // shift register for the channels to sample
+  uint8_t channels = 0b00000001; // shift register for the channels to sample
   TCCR1A = 0;
   TCCR1B = (1 << WGM12) | (1 << CS10) | (1 << CS12); 
 
@@ -39,15 +44,20 @@ int main(int argc, char** argv){
     // Wait for the interrupt, get sleep
     // Send the data
     if(timer_interrupt){
-      uint8_t samples[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
+      uint8_t samples[CHANNELS] = {0};
       sample_all_channels(channels, samples);
-      for(int i = 0; i < 8; i++){
-        if(channels[i]){
-          UART_putString("Channel ");
-          UART_putChar(i + '0');
-          UART_putString(": ");
-          UART_putChar(samples[i]);
+      if(continuous){
+        char line[CHANNELS*2 + 1];
+        int offset = 0;
+        for (int j = 0; j < CHANNELS - 1; j++) {
+          offset += sprintf(line + offset, "%d,", samples[j]);
         }
+        sprintf(line + offset, "%d\n", samples[CHANNELS - 1]);
+        UART_putString(line);
+      }
+      
+      else{
+        buffer_put(samples);
       }
       timer_interrupt = 0;
     } else {
@@ -58,11 +68,3 @@ int main(int argc, char** argv){
 
 }
 
-void sample_all_channels(uint8_t channels, uint8_t* samples){
-  for(int i = 0; i < 8; i++){
-    if(channels & (1 << i)){
-      uint8_t data = ADC_read(i);
-      samples[i] = data;
-    }
-  }
-}

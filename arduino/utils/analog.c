@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "uart.h"
+#include "const.h"
 
 
 void ADC_init(void){
@@ -28,4 +29,13 @@ uint8_t ADC_read(uint8_t channel){
   while(ADCSRA & (1<<ADSC));
   // Return the result
   return ADCH;
+}
+
+void sample_all_channels(uint8_t channels, uint8_t* samples){
+  for(int i = 0; i < CHANNELS; i++){
+    if(channels & (1 << i)){
+      uint8_t data = ADC_read(i);
+      samples[i] = data;
+    }
+  }
 }

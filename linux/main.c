@@ -10,7 +10,7 @@
 int main(int argc, char** argv){
 
     if(argc < 4){
-        fprintf(stderr, "[USAGE] ./main.o <device> <baudrate> <sample_time>\n");
+        fprintf(stderr, "[USAGE] ./main.o <device> <baudrate> <sample_time> <s\n");
        return -1;
     }
     char* device = argv[1];
@@ -44,3 +44,4 @@ int main(int argc, char** argv){
 
     return 0;
 }
+
