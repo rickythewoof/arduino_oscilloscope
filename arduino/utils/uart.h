@@ -1,8 +1,7 @@
 #ifndef _UART_H_
 #define _UART_H_
 
-#define BAUD 19200
-#define MYUBRR (F_CPU/16/BAUD-1)
+#include "const.h"
 
 void UART_init(void);
 void UART_putChar(uint8_t c);

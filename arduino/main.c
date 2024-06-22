@@ -33,7 +33,7 @@ void config_settings(uint8_t* buf){
   uint8_t chan = 0;
   uint16_t sample_freq = 0;
   continuous = 0;
-  UART_putString((uint8_t*)"Configuring settings\n");
+  if(DEBUG) UART_putString((uint8_t*)"Configuring settings\n");
   while(*buf){
     if(*buf == 'c'){
       continuous = 1;
@@ -94,10 +94,10 @@ int main(int argc, char** argv){
       }
       timer_interrupt = 0;
     } else if(received_msg){
-      UART_putString((uint8_t*)"Received message!\n");
-      uint8_t buffer[256] = {0};
+      if(DEBUG) UART_putString((uint8_t*)"Received message!\n");
+      uint8_t buffer[64] = {0};
       UART_getString(buffer);
-      UART_putString(buffer);
+      if(DEBUG) UART_putString(buffer); // Echo the message for debugging
       config_settings(buffer);
       received_msg = 0;
     }
