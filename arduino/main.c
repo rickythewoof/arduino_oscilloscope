@@ -13,29 +13,30 @@
 
 int sample_index = 0;
 
-char interrupts = 0; // shift register for the interrupts (TINT, UINT)
+char interrupts = 0; // shift register for the interrupts (TIMINT, RXINT)
 
 char continuous = 1;
 uint16_t sampling_frequency = 1;
 uint8_t channels = 0b00000001; // shift register for the channels to sample
 
 ISR(TIMER1_COMPA_vect){
-  interrupts |= 1 << TINT;
+  interrupts |= 1 << TIMINT;
 }
 
 ISR(USART0_RX_vect) {
-  interrupts |= 1 << UINT;
+  interrupts |= 1 << RXINT;
 }
 
 void config_settings(uint8_t* buf){
   uint8_t* buf0 = buf;
   uint8_t chan = 0;
   uint16_t sample_freq = 0;
-  continuous = 0;
   if(DEBUG) UART_putString((uint8_t*)"Configuring settings\n");
   while(*buf){
     if(*buf == 'c'){
       continuous = 1;
+    } else if(*buf == 'b'){
+      continuous = 0;
     }
     if(*buf == 's'){
       buf++;
@@ -76,7 +77,7 @@ int main(int argc, char** argv){
   while(1){
     // Wait for the interrupt, get sleep
     // Send the data
-    if(interrupts & (1 << TINT)){
+    if(interrupts & (1 << TIMINT)){
       uint8_t samples[CHANNELS] = {0};
       sample_all_channels(channels, samples);
       if(continuous){
@@ -91,14 +92,14 @@ int main(int argc, char** argv){
       else{
         buffer_put(samples);
       }
-      interrupts &= ~(1 << TINT);
-    } else if(interrupts & (1 << UINT)){
+      interrupts &= ~(1 << TIMINT);
+    } else if(interrupts & (1 << RXINT)){
       if(DEBUG) UART_putString((uint8_t*)"Received message!\n");
       uint8_t cmd[64] = {0};
       UART_getString(cmd);
       if(DEBUG) UART_putString(cmd); // Echo the message for debugging
       config_settings(cmd);
-      interrupts &= ~(1 << UINT);
+      interrupts &= ~(1 << RXINT);
     }
     else {
       set_sleep_mode(SLEEP_MODE_IDLE);

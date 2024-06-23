@@ -18,6 +18,8 @@ extern "C" {
   //! puts the port in blocking/nonblocking mode
   void serial_set_blocking(int fd, int should_block);
 
+  void open_serial_rx(int fd);
+
 #ifdef __cplusplus
 }
 #endif
