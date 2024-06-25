@@ -10,9 +10,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-uint8_t channels = 0b00000001; // shift register for the channels to sample
-int sample_frequency = 1;
-
 int serial_set_interface_attribs(int fd, int speed, int parity) {
   struct termios tty;
   memset (&tty, 0, sizeof tty);
@@ -81,56 +78,19 @@ int serial_open(const char* name) {
   return fd;
 }
 
-void open_serial_rx(int fd) {
-  fprintf(stderr, "Send commands here\n");
-  while(1) {
-    char buf[1024];
-    memset(buf, 0, 1024);
-    fprintf(stderr, "(channels:%d | sample:%d) $> ", channels, sample_frequency);
-    fgets(buf, 1024, stdin);
-    update_channels(buf);
-    int l=strlen(buf);
-    buf[l]='\n';
-    ++l;
-    write(fd, buf, l);
-  }
-}
 
-void update_channels(char* buf){
-  char* buf0 = buf;
+uint8_t update_channels(char* buf){
   uint8_t chan = 0;
-  uint16_t sample_freq = 0;
   while(*buf){
-
-    if(*buf == 's'){
-      buf++;
-      sample_freq = atoi(buf);
-    }
     if(*buf == 'm'){
       buf++;
       chan = atoi(buf);
-    }
-    if(*buf == 'q'){
-      exit(0);
     }
     if(*buf == '\n' || *buf == '\r' || *buf == 0){
       break;
     }
     buf++;
   }
-  if(chan != 0){
-    channels = chan;
-  } if(sample_freq != 0){
-    sample_frequency = sample_freq;
-  }
+  return chan;
 }
 
-void open_serial_tx(int fd) {
-  while(1) {
-    char buf[1024];
-    memset(buf, 0, 1024);
-    int l = read(fd, buf, 1024);
-    if(l > 0)
-      printf("%s", buf);
-  }
-}

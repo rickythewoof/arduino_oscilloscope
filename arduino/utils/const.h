@@ -7,4 +7,5 @@
 
 #define TIMINT 1
 #define RXINT 2
-#define TRGINT 3
+
+#define TRIGGER_THRESHOLD 100

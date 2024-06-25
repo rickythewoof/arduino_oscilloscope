@@ -1,9 +1,4 @@
-#pragma once
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <termios.h>
-#include <unistd.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -18,7 +13,7 @@ extern "C" {
   //! puts the port in blocking/nonblocking mode
   void serial_set_blocking(int fd, int should_block);
 
-  void open_serial_rx(int fd);
+  uint8_t update_channels(char* buf);
 
 #ifdef __cplusplus
 }

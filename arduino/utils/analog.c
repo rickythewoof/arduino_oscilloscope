@@ -39,3 +39,14 @@ void sample_all_channels(uint8_t channels, uint8_t* samples){
     }
   }
 }
+
+char is_triggered(uint8_t* samples, uint8_t* last_samples, uint8_t channels){
+  for(int i = 0; i < CHANNELS; i++){
+    if(channels & (1 << i)){
+      if(abs(samples[i] - last_samples[i]) > TRIGGER_THRESHOLD){
+        return 1;
+      }
+    }
+  }
+  return 0;
+}

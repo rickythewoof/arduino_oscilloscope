@@ -13,9 +13,13 @@
 
 int sample_index = 0;
 
+uint8_t curr_samples[CHANNELS] = {0};
+uint8_t last_samples[CHANNELS] = {0};
+
 char interrupts = 0; // shift register for the interrupts (TIMINT, RXINT)
 
 char continuous = 1;
+char wait_for_trigger = 0;
 uint16_t sampling_frequency = 1;
 uint8_t channels = 0b00000001; // shift register for the channels to sample
 
@@ -33,6 +37,9 @@ void config_settings(uint8_t* buf){
   uint16_t sample_freq = 0;
   if(DEBUG) UART_putString((uint8_t*)"Configuring settings\n");
   while(*buf){
+    if(*buf == 't'){
+      wait_for_trigger = 1;
+    }
     if(*buf == 'c'){
       continuous = 1;
     } else if(*buf == 'b'){
@@ -78,19 +85,29 @@ int main(int argc, char** argv){
     // Wait for the interrupt, get sleep
     // Send the data
     if(interrupts & (1 << TIMINT)){
-      uint8_t samples[CHANNELS] = {0};
-      sample_all_channels(channels, samples);
+      sample_all_channels(channels, curr_samples);
+      if(wait_for_trigger){
+        interrupts &= ~(1 << TIMINT);
+        if(DEBUG) UART_putString((uint8_t*)"Waiting for trigger\n");
+        wait_for_trigger = (is_triggered(curr_samples, last_samples, channels)) ? 0 : 1;
+        for(int i = 0; i < CHANNELS; i++){
+          last_samples[i] = curr_samples[i];
+        }
+        if(DEBUG && !wait_for_trigger){
+          UART_putString((uint8_t*)"Triggered!\n");}
+        continue;
+      }
       if(continuous){
         char line[CHANNELS*2 + 1];
         int offset = 0;
         for (int j = 0; j < CHANNELS - 1; j++) {
-          offset += sprintf(line + offset, "%d,", samples[j]);
+          offset += sprintf(line + offset, "%d,", curr_samples[j]);
         }
-        sprintf(line + offset, "%d\n", samples[CHANNELS - 1]);
+        sprintf(line + offset, "%d\n", curr_samples[CHANNELS - 1]);
         UART_putString(line);
       }
       else{
-        buffer_put(samples);
+        buffer_put(curr_samples);
       }
       interrupts &= ~(1 << TIMINT);
     } else if(interrupts & (1 << RXINT)){
