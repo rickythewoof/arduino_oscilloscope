@@ -16,7 +16,6 @@ void main_fn();
 void child_fn();
 
 uint8_t channels = 0b00000001; // shift register for the channels to sample
-int sample_frequency = 1;
 
 pid_t pid;
 
@@ -79,7 +78,7 @@ void main_fn(int serial_fd, int* pipefd){
     while(1) {
         char buf[1024];
         memset(buf, 0, 1024);
-        fprintf(stderr, "(channels:%d | sample:%d) $> ", channels, sample_frequency);
+        fprintf(stderr, "(channels:%d) $> ", channels);
         fgets(buf, 1024, stdin);
         uint8_t new_channel = update_channels(buf);
         if(new_channel != 0 && channels != new_channel){
